@@ -80,7 +80,7 @@ class AppFixtures extends Fixture
             $eventCreated->setState("onSchedule");
             $eventCreated->setPublic($event['public']);
             $eventCreated->setPublicPlace($event['publicPlace']);
-            $eventCreated->setProfile($profile);
+            $eventCreated->setOrganisator($profile);
             $eventCreated->setStartDate(DateTime::createFromFormat('d.m.Y h:i', $event['startDate']));
             $eventCreated->setEndDate(DateTime::createFromFormat('d.m.Y h:i', $event['endDate']));
             $manager->persist($eventCreated);

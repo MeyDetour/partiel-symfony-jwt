@@ -137,7 +137,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->profile;
     }
 
-    public function setProfile(Profile $profile): static
+    public function setOrganisator(Profile $profile): static
     {
         // set the owning side of the relation if necessary
         if ($profile->getUserAssociated() !== $this) {

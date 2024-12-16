@@ -25,7 +25,17 @@ class ProfileController extends AbstractController
                 $invitations[] = $invitation;
             }
         }
-
         return $this->json($invitations, 200, [], ['groups' => 'invitations']);
+    }
+    #[Route('/profile/events', name: 'app_profile_events',methods: 'get')]
+    public function getEventsWichWeAreParticipant(): Response
+    {
+        $events = [];
+        foreach ($this->getUser()->getProfile()->getEventsWichProfileParticip() as $event) {
+            if (EventController::isValidEvent($event)) {
+                $events[] = $event;
+            }
+        }
+        return $this->json($events, 200, [], ['groups' => 'getEvents']);
     }
 }

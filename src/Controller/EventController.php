@@ -17,8 +17,25 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api')]
 class EventController extends AbstractController
 {
+    //==============================================================ACTIONS
+    #[Route('/event/{id}', name: 'canceled_event', methods: "patch")]
+    public function canceledEvent(EntityManagerInterface $entityManager, Event $event): Response
+    {
+        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
+            # ad administrator permission
+            return $this->json(["message" => "Only author can edit this event"], 401);
+        }
+        if (!self::isValidEvent($event)) {
+            return $this->json(["message" => "Event is passed or canceled"], 401);
+        }
+        $event->setState("canceled");
+        $entityManager->persist($event);
+        $entityManager->flush();
+        return $this->json(["message" => "ok"], 200);
 
-    #[Route('/create/event', name: 'new_event',methods: 'post')]
+    }
+
+    #[Route('/create/event', name: 'new_event', methods: 'post')]
     public function create(SerializerInterface $serializer, EntityManagerInterface $entityManager, Request $request): Response
     {
 
@@ -27,7 +44,7 @@ class EventController extends AbstractController
         if (!$event->getName() or trim($event->getName(), ' ') == "" or !$event->getDescription() or trim($event->getDescription(), ' ') == "") {
             return $this->json(["message" => "Name and description must be not null "], 400);
         }
-        if ($event->isPublic() == null or !$event->getEndDate() or !$event->getStartDate()) {
+        if (($event->isPublic() != false and $event->isPublic() != true) or ($event->isPublicPlace() != false and $event->isPublicPlace() != true) or !$event->getEndDate() or !$event->getStartDate()) {
             return $this->json(["message" => "You must provide this fields : startDate, endDate, publicPlace(boolean) , public(boolean) "], 400);
         }
 
@@ -43,21 +60,22 @@ class EventController extends AbstractController
         }
         $event->setState("onSchedule");
         $event->setCreatedAt(new \DateTimeImmutable());
-        $event->setProfile($this->getUser()->getProfile());
+        $event->setOrganisator($this->getUser()->getProfile());
+        $event->addParticipant($this->getUser()->getProfile());
         $entityManager->persist($event);
         $entityManager->flush();
         return $this->json(["message" => "ok"], 201);
 
     }
 
-    #[Route('/edit/event/{id}', name: 'edit_event',methods: "put")]
+    #[Route('/edit/event/{id}', name: 'edit_event', methods: "put")]
     public function edit(SerializerInterface $serializer, Event $event, EntityManagerInterface $entityManager, Request $request): Response
     {
-        if ($this->getUser()->getProfile() != $event->getProfile()) {
+        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
             # ad administrator permission
             return $this->json(["message" => "Only author can edit this event"], 401);
         }
-        if ($event->getEndDate() <= $event->getStartDate() or  $event->getStartDate() <= new \DateTime() or $event->getEndDate() <= new \DateTime()) {
+        if ($event->getEndDate() <= $event->getStartDate() or $event->getStartDate() <= new \DateTime() or $event->getEndDate() <= new \DateTime()) {
             return $this->json(["message" => "You cannot edit an old event"], 401);
         }
 
@@ -66,7 +84,6 @@ class EventController extends AbstractController
 
         $event->setName($eventEdited->getName());
         $event->setDescription($eventEdited->getDescription());
-        $event->setState($eventEdited->isPublic());
         $event->setPublic($eventEdited->isPublic());
         $event->setPublicPlace($eventEdited->isPublicPlace());
         $event->setStartDate($eventEdited->getStartDate());
@@ -89,89 +106,180 @@ class EventController extends AbstractController
 
     }
 
-    #[Route('/events', name: 'get_events',methods: "get")]
-    public function getEvents(EventRepository $eventRepository, Request $request): Response
+    #[Route('/join/event/{id}', name: 'join_public_event', methods: "PATCH")]
+    public function joinPublicEvent(Event $event, EntityManagerInterface $manager): Response
     {
+        if (!$event->isPublic()) {
+            return $this->json(["message" => "Event must be public"], 400);
+        }
+        if (!self::isValidEvent($event)) {
+            return $this->json(["message" => "This event is passed or canceled"], 401);
+        }
+
+        $event->addParticipant($this->getUser()->getProfile());
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
+ #[Route('/left/event/{id}', name: 'remove_public_event', methods: "PATCH")]
+    public function leftPublicEvent(Event $event, EntityManagerInterface $manager): Response
+    {
+        if($event->getOrganisator()==$this->getUser()->getProfile()){
+            return $this->json(["message" => "Organisator cannot left its own event its illogic"], 400);
+        }
+
+        if (!$event->isPublic()) {
+            return $this->json(["message" => "Event must be public"], 400);
+        }
+        if (!self::isValidEvent($event)) {
+            return $this->json(["message" => "This event is passed or canceled"], 401);
+        }
+
+        $event->removeParticipant($this->getUser()->getProfile());
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
+
+    //==============================================================GETTERS
+
+    //get  private event with wich we are invited  and public events
+    #[Route('/events', name: 'get_events', methods: "get")]
+    public function getEvents(EventRepository $eventRepository): Response
+    {
+        //public events
         $events = $eventRepository->getNextPublicEvent();
+
         foreach ($this->getUser()->getProfile()->getInvitations() as $invitation) {
             $event = $invitation->getEvent();
             if (self::isValidEvent($event)) {
                 $events[] = $event;
             }
         }
+
+        //you are participant of event
+        foreach ($this->getUser()->getProfile()->getEventsWichProfileParticip() as $event) {
+            if (self::isValidEvent($event) && !$event->isPublic()) {
+                $events[] = $event;
+            }
+        }
+
+        //you are creator of event
+        foreach ($this->getUser()->getProfile()->getEvents() as $event) {
+            if (self::isValidEvent($event) && !$event->isPublic()) {
+                $events[] = $event;
+            }
+        }
         return $this->json($events, 200, [], ['groups' => ['getEvents']]);
     }
 
-    //METHODE FOR DEBUG
-    #[Route('/events/all', name: 'all_events',methods: "get")]
+    //get only public events
+    #[Route('/events/public', name: 'get_public_events', methods: "get")]
+    public function getEventsPublic(EventRepository $eventRepository): Response
+    {
+        $events = $eventRepository->getNextPublicEvent();
+        return $this->json($events, 200, [], ['groups' => ['getEvents']]);
+    }
+
+    //get only private events with wich we are invited
+    #[Route('/events/private', name: 'get_private_events', methods: "get")]
+    public function getPrivateEvents(EventRepository $eventRepository): Response
+    {
+
+        //you are invited to event
+        $events = [];
+        foreach ($this->getUser()->getProfile()->getInvitations() as $invitation) {
+            $event = $invitation->getEvent();
+            if (self::isValidEvent($event)) {
+                $events[] = $event;
+            }
+        }
+
+        //you are participant of event
+        foreach ($this->getUser()->getProfile()->getEventsWichProfileParticip() as $event) {
+            if (self::isValidEvent($event) && !$event->isPublic()) {
+                $events[] = $event;
+            }
+        }
+
+        //you are creator of event
+        foreach ($this->getUser()->getProfile()->getEvents() as $event) {
+            if (self::isValidEvent($event) && !$event->isPublic()) {
+                $events[] = $event;
+            }
+        }
+        return $this->json($events, 200, [], ['groups' => ['getEvents']]);
+    }
+
+    //METHODE FOR DEBUG get all events of db
+    #[Route('/events/all', name: 'all_events', methods: "get")]
     public function allEvents(EventRepository $eventRepository, Request $request): Response
     {
 
-        if (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())){
-            return $this->json(["message"=>"you are not admin"], 401);
+        if (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())) {
+            return $this->json(["message" => "you are not admin"], 401);
         }
         $events = $eventRepository->findAll();
 
         return $this->json($events, 200, [], ['groups' => ['getEvents']]);
     }
 
-    #[Route('/event/{id}', name: 'get_event',methods: "get")]
+    // get juste one event participants,invitations etc with some conditions
+    #[Route('/event/{id}', name: 'get_event', methods: "get")]
     public function getEvent(EventRepository $eventRepository, Event $event): Response
     {
-        $now = new \DateTime();
-        $profile = $this->getUser()->getProfile();
 
-        //  we can show passed event
-        // uncomment this line to avoid to see passed event
-        /*if ($event->getStartDate() < $now) {
-            return $this->json(["Event is finished"], 401);
-        }*/
 
-        //assert that its public event , if not we check if your invited
-        if (self::isAuthorizedToSeePrivateEvent($this->getUser(),$event)) {
+
+
+        //  you can see only active events
+        //comment this line to see all event includes passsed events ( this keep restriction for private event)
+        // if event is passed organisator can ( quand meme) see it's event
+        if (!self::isValidEvent($event) && $event->getOrganisator() != $this->getUser()->getProfile()) {
+            return $this->json(["Event is finished or canceled"], 401);
+        }
+
+
+
+        //if its private event we check if your invited or you are participant or organisator
+        // allow to see participants and invitations status only if event is private
+        if (!self::isAuthorizedToSeePrivateEvent($this->getUser(), $event)) {
             return $this->json(["Event is private and you are not invited"], 401);
         }
 
-
-        return $this->json($event, 200, [], ['groups' => ['getEvents']]);
+//invitationss doesnt exist in the context of public event, we return [] for public event
+        return $this->json($event, 200, [], ['groups' => ['getDetailOfPrivateEvent']]);
     }
 
-    #[Route('/event/{id}', name: 'canceled_event',methods: "patch")]
-    public function canceledEvent(EntityManagerInterface $entityManager, Event $event): Response
+
+    //==============================================================VERIFICATOR
+
+    static function isValidEvent(Event $event): bool
     {
-        if ($this->getUser()->getProfile() != $event->getProfile()) {
-            # ad administrator permission
-            return $this->json(["message" => "Only author can edit this event"], 401);
-        }
-        if (!self::isValidEvent($event)){
-            return $this->json(["message" => "Event is passed or canceled"], 401);
-        }
-        $event->setState("canceled");
-        $entityManager->persist($event);
-        $entityManager->flush();
-        return $this->json(["message" => "ok"], 200);
-
-    }
-
-
-    static function isValidEvent(Event $event):bool{
         $now = new \DateTime();
         if ($event->getStartDate() > $now and $event->getState() == "onSchedule") {
             return true;
         }
         return false;
     }
-    static function isAuthorizedToSeePrivateEvent( $user,Event $event):bool{
 
-        $profile=$user->getProfile();
-        if (!$event->isPublic() and !$profile->isEventInEventsOfUser($event) and !$profile->isEventInInvited($event)) {
-            return false;
+    static function isAuthorizedToSeePrivateEvent($user, Event $event): bool
+    {
+
+        $profile = $user->getProfile();
+        if ($profile == $event->getOrganisator()) {
+            return true;
         }
+        if (!$event->isPublic() and !$profile->isEventInEventsOfUser($event) and !$profile->isEventInInvited($event)) {
+
+            return false;
+
+        }
+
         return true;
     }
-
-
-
 
 
     //TO DO

@@ -17,11 +17,11 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvents','users','profile'])]
+    #[Groups(['getEvents','users','profile','getDetailOfPrivateEvent'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['getEvents','users','profile'])]
+    #[Groups(['getEvents','users','profile','getDetailOfPrivateEvent'])]
     private ?string $displayName = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
@@ -39,12 +39,14 @@ class Profile
      * @var Collection<int, Event>
      */
     #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'participants')]
+    #[ORM\OrderBy(["startDate"=>"ASC"])]
     private Collection $eventsWichProfileParticip;
 
     /**
      * @var Collection<int, Invitation>
      */
     #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'guest', orphanRemoval: true)]
+    #[ORM\OrderBy(["createdAt"=>"ASC"])]
     private Collection $invitations;
 
     public function __construct()
@@ -95,7 +97,7 @@ class Profile
     {
         if (!$this->events->contains($event)) {
             $this->events->add($event);
-            $event->setProfile($this);
+            $event->setOrganisator($this);
         }
 
         return $this;
@@ -105,8 +107,8 @@ class Profile
     {
         if ($this->events->removeElement($event)) {
             // set the owning side to null (unless already changed)
-            if ($event->getProfile() === $this) {
-                $event->setProfile(null);
+            if ($event->getOrganisator() === $this) {
+                $event->setOrganisator(null);
             }
         }
 
@@ -161,11 +163,11 @@ class Profile
     public function isEventInInvited(Event $eventSearched): bool
     {
         foreach ($this->invitations as $invit) {
+
             if ($eventSearched == $invit->getEvent()) {
                 return true;
             }
         }
-
         return false;
     }
     public function addInvitation(Invitation $invitation): static

@@ -48,7 +48,7 @@ class InvitationController extends AbstractController
         }
 
         //user cannot invite itself
-        if ($this->getUser()->getProfile() != $event->getProfile()) {
+        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
             # ad administrator permission
             return $this->json(["message" => "Only author can edit this event"], 401);
         }
@@ -65,10 +65,84 @@ class InvitationController extends AbstractController
         return $this->json(["message" => "ok"], 200);
 
     }
-    #create invit
+
+    #[Route('/invite/{id}/accept', name: 'accept_invitation', methods: "patch")]
+    public function accept(EntityManagerInterface $manager, Invitation $invitation): Response
+    {
+        //we dont need to assert if invite is refused because we cant change choice evrybody can do mistake
+
+        //other people can not accept your invitation (logic lol)
+        if ($this->getUser()->getProfile() != $invitation->getGuest()) {
+            return $this->json(["message" => "It's not your invitation"], 404);
+        }
+
+        $event = $invitation->getEvent();
+
+        //if event is passed we set invitation as refused
+        $now = new \DateTime();
+        if (!$event->getStartDate() > $now) {
+            $invitation->setStatus("refused");
+            $invitation->setStatus("refused");
+            $event->removeParticipant($this->getUser()->getProfile());
+            $manager->persist($invitation);
+            $manager->flush();
+            return $this->json(["message" => "Event is passed"], 404);
+        }
+
+        //we can do nothing if event is canceled, maybe organisator will reactivate event
+        if ($event->getState() == "onSchedule"){
+            return $this->json(["message" => "Event is canceled"], 404);
+        }
+
+
+        $invitation->setStatus("accepted");
+        $event->addParticipant($this->getUser()->getProfile());
+        $manager->persist($invitation);
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
+
+    #[Route('/invite/{id}/refuse', name: 'arefuse_invitation', methods: "patch")]
+    public function refuse(EntityManagerInterface $manager, Invitation $invitation): Response
+    {
+        //we dont need to assert if invite is refused because we cant change choice evrybody can do mistake
+
+
+        //other people can not accept your invitation (logic lol)
+        if ($this->getUser()->getProfile() != $invitation->getGuest()) {
+            return $this->json(["message" => "It's not your invitation"], 404);
+        }
+
+        $event = $invitation->getEvent();
+
+        //if event is passed we set invitation as refused
+        $now = new \DateTime();
+        if (!$event->getStartDate() > $now) {
+          $invitation->setStatus("refused");
+            $invitation->setStatus("refused");
+            $event->removeParticipant($this->getUser()->getProfile());
+            $manager->persist($invitation);
+            $manager->flush();
+            return $this->json(["message" => "Event is passed"], 404);
+        }
+
+        //we can do nothing if event is canceled, maybe organisator will reactivate event
+        if ($event->getState() == "onSchedule"){
+            return $this->json(["message" => "Event is canceled"], 404);
+        }
+
+        $invitation->setStatus("refused");
+        $event->removeParticipant($this->getUser()->getProfile());
+        $manager->persist($invitation);
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
     # edit delete invit
 
-    # accept invit  -> add profile to event
     # if invit already confirm cant accept
     # refuse invit
 

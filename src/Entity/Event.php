@@ -15,57 +15,61 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getEvents'])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent'])]
     //author
-    private ?Profile $profile = null;
+    private ?Profile $organisator = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?bool $isPublicPlace = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?string $state = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
      * @var Collection<int, Profile>
      */
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'eventsWichProfileParticip')]
+    #[Groups(['getDetailOfPrivateEvent'])]
+    #[ORM\OrderBy(["displayName"=>"ASC"])]
     private Collection $participants;
 
     /**
      * @var Collection<int, Invitation>
      */
     #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'event')]
+    #[Groups(['getDetailOfPrivateEvent'])]
+    #[ORM\OrderBy(["createdAt"=>"ASC"])]
     private Collection $invitations;
 
     public function __construct()
@@ -139,14 +143,14 @@ class Event
         return $this;
     }
 
-    public function getProfile(): ?Profile
+    public function getOrganisator(): ?Profile
     {
-        return $this->profile;
+        return $this->organisator;
     }
 
-    public function setProfile(?Profile $profile): static
+    public function setOrganisator(?Profile $organisator): static
     {
-        $this->profile = $profile;
+        $this->organisator = $organisator;
 
         return $this;
     }

@@ -12,7 +12,7 @@ class Invitation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['invitations'])]
+    #[Groups(['invitations','getDetailOfPrivateEvent'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'invitations')]
@@ -21,15 +21,16 @@ class Invitation
 
     #[ORM\ManyToOne(inversedBy: 'invitations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getDetailOfPrivateEvent'])]
     private ?Profile $guest = null;
 
     #[ORM\Column]
-    #[Groups(['invitations'])]
+    #[Groups(['invitations','getDetailOfPrivateEvent'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
     //status : waiting, accepted,refused
-    #[Groups(['invitations'])]
+    #[Groups(['invitations','getDetailOfPrivateEvent'])]
     private ?string $status = null;
 
     public function getId(): ?int
