@@ -4,6 +4,11 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
+    serializer:
+        enabled: true
+        # date from json to  serializer
+        default_context:
+            datetime_format: 'd.m.Y H:i'
 
     #esi: true
     #fragments: true
