@@ -32,7 +32,7 @@ class Profile
     /**
      * @var Collection<int, Event>
      */
-    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'profile', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organisator', orphanRemoval: true)]
     private Collection $events;
 
     /**
@@ -49,11 +49,18 @@ class Profile
     #[ORM\OrderBy(["createdAt"=>"ASC"])]
     private Collection $invitations;
 
+    /**
+     * @var Collection<int, OtherTakingInCharge>
+     */
+    #[ORM\OneToMany(targetEntity: OtherTakingInCharge::class, mappedBy: 'author', orphanRemoval: true)]
+    private Collection $otherTakingInCharges;
+
     public function __construct()
     {
         $this->events = new ArrayCollection();
         $this->eventsWichProfileParticip = new ArrayCollection();
         $this->invitations = new ArrayCollection();
+        $this->otherTakingInCharges = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -186,6 +193,36 @@ class Profile
             // set the owning side to null (unless already changed)
             if ($invitation->getGuest() === $this) {
                 $invitation->setGuest(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OtherTakingInCharge>
+     */
+    public function getOtherTakingInCharges(): Collection
+    {
+        return $this->otherTakingInCharges;
+    }
+
+    public function addOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
+    {
+        if (!$this->otherTakingInCharges->contains($otherTakingInCharge)) {
+            $this->otherTakingInCharges->add($otherTakingInCharge);
+            $otherTakingInCharge->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
+    {
+        if ($this->otherTakingInCharges->removeElement($otherTakingInCharge)) {
+            // set the owning side to null (unless already changed)
+            if ($otherTakingInCharge->getAuthor() === $this) {
+                $otherTakingInCharge->setAuthor(null);
             }
         }
 

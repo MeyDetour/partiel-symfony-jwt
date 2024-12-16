@@ -28,16 +28,18 @@ REGLE
 
 
 Evenemnt dans un lieu privé :
-- organisateur creer des suggestions
-- modifier ou supprimer une prise en charge ( editer le status de la sugegstion)
+- creer des contributions 
+-  ajouter a ces contributions des suggetsions 
+-  ajouter a ces contributions des prise en charge ( rebelle ))
+-  prendre en charge une suggestion , dé prendre en charge une suggestion 
+-  supprimer une prise en charge rebelle 
+- supprimer une suggestion 
+- editer une suggestion
   supprimer tout court une pris ene charge
-- prise en charge d'une sugegstion
-- prise en charge
-  Contribution ( event, suggestions,prises en charge,type)
-  Prise en charge ( profile, liste de suggestions(null) , description ,event )
-  Suggestion ( type , description , status = [prise en charge, a prendre en charge ], profile ,event )
-
-contirbutions = [ suggestions ,  prises en chagre]
+- Contribution ( event, suggestions,prises en charge,desstiption (type) ))
+- Prise en charge ( profile,  description , contribution )
+- Suggestion (  description , status = [prise en charge, a prendre en charge ], profile qui s'en occupe ,contribution )
+ 
 
 
 + documentations

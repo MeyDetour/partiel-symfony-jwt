@@ -72,10 +72,17 @@ class Event
     #[ORM\OrderBy(["createdAt"=>"ASC"])]
     private Collection $invitations;
 
+    /**
+     * @var Collection<int, Contribution>
+     */
+    #[ORM\OneToMany(targetEntity: Contribution::class, mappedBy: 'event')]
+    private Collection $contributions;
+
     public function __construct()
     {
         $this->participants = new ArrayCollection();
         $this->invitations = new ArrayCollection();
+        $this->contributions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -239,6 +246,36 @@ class Event
             // set the owning side to null (unless already changed)
             if ($invitation->getEvent() === $this) {
                 $invitation->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Contribution>
+     */
+    public function getContributions(): Collection
+    {
+        return $this->contributions;
+    }
+
+    public function addContribution(Contribution $contribution): static
+    {
+        if (!$this->contributions->contains($contribution)) {
+            $this->contributions->add($contribution);
+            $contribution->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContribution(Contribution $contribution): static
+    {
+        if ($this->contributions->removeElement($contribution)) {
+            // set the owning side to null (unless already changed)
+            if ($contribution->getEvent() === $this) {
+                $contribution->setEvent(null);
             }
         }
 
