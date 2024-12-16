@@ -4,14 +4,14 @@
 
 ENTITY
 - entité profile (displayname , user ,image)
-- invitation ( author, profile , date;event, status ( accepté, refusé, en attente deault)
+- [x] invitation ( author, profile , date;event, status ( accepté, refusé, en attente deault)
 - [x] /api create/event (name, lieu type ;description,date non dépassé , date de fin suerieur a la date de début, Profile auteur de l'event, statut public ou privé, et un type de lieu public ou privé , state ( on schedule toujours prevu ou caceled ,contributions;suggestions, image )
 
 
 REQUEETE
 
-- recupere la liste des events publics
-- recuperer la liste des events privés auxuqels on est ivnités
+- [x] recupere la liste des events publics
+- [x] recuperer la liste des events privés auxuqels on est ivnités
 -  event privé : recuperer les participants d'un evenement si on est dans cet event ( participant ou organisateur ) voir qui a repondu et pas repondu etc
 - event publ
 -  event privé : recuperer les participants d'un evenement si on est dans cet event ( participant ou organisateur ) voir qui a repondu et ic recuperé les participants si on est organisateur
