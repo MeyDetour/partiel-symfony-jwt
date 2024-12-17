@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ExceptionController extends AbstractController
 {
-    public function handleException(\Exception $exception): Response
+    public function handleException(\Throwable $exception): Response
     {
 
         if ($exception instanceof NotFoundHttpException){
@@ -20,7 +20,7 @@ class ExceptionController extends AbstractController
         }
 
         return $this->json(
-            ['message' => $exception,], 400
+            ['message' => $exception->getMessage(),], 400
         );
 
     }
