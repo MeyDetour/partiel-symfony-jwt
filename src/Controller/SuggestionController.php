@@ -107,7 +107,7 @@ class SuggestionController extends AbstractController
     #[Route('/suggestion/{id}', name: 'handle_suggestion', methods: 'PATCH')]
     public function handleSuggestion(Suggestion $suggestion, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer,ContributionRepository $contributionRepository): Response
     {
-        if ($this->getUser()->getProfile()->isEventInEventsOfUser($suggestion->getEvent())){
+        if (!$this->getUser()->getProfile()->isEventInEventsOfUser($suggestion->getEvent())){
             return $this->json(["message" => "You are not participant of the event"], 400);
         }
         if (!ValidatorService::isValidEvent($suggestion->getEvent())) {
