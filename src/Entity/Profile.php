@@ -38,6 +38,16 @@ class Profile
     #[ORM\OrderBy(["startDate"=>"ASC"])]
     private Collection $eventsWichProfileParticip;
 
+
+
+    /**
+     * @var Collection<int, Event>
+     */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organisator', orphanRemoval: true)]
+    private Collection $organizedEvents;
+
+
+
     /**
      * @var Collection<int, Invitation>
      */
@@ -64,21 +74,16 @@ class Profile
     #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'administrators')]
     private Collection $administratorInEvents;
 
-    /**
-     * @var Collection<int, Event>
-     */
-    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organisator', orphanRemoval: true)]
-    private Collection $events;
-
 
 
     public function __construct()
     {
-     /*   $this->events = new ArrayCollection();*/
         $this->eventsWichProfileParticip = new ArrayCollection();
         $this->invitations = new ArrayCollection();
         $this->contributions = new ArrayCollection();
         $this->administratorInEvents = new ArrayCollection();
+
+        $this->organizedEvents = new ArrayCollection();
           }
 
     public function getId(): ?int

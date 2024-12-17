@@ -57,7 +57,14 @@ class Event
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'eventsWichProfileParticip')]
     #[Groups(['getDetailOfPrivateEvent'])]
     #[ORM\OrderBy(["displayName"=>"ASC"])]
+    #[ORM\JoinTable(name: "event_participants")]
     private Collection $participants;
+
+
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Profile $organisator = null;
+
 
     /**
      * @var Collection<int, Invitation>
@@ -87,10 +94,6 @@ class Event
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'administratorInEvents')]
     #[Groups(['getDetailOfPrivateEvent'])]
     private Collection $administrators;
-
-    #[ORM\ManyToOne(inversedBy: 'events')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Profile $organisator = null;
 
 
 
