@@ -77,28 +77,27 @@ class HomeController extends AbstractController
                 'name' => 'Edit own profile',
                 'route' => '/api/profile',
                 'methode' => 'PUT',
-                'body' => [ "displayName" => "string (NOT NULL)",
+                'body' => ["displayName" => "string (NOT NULL)",
                 ],
-                'sendBack' => [
-                    ["message"=>"ok"]
-                ],
+                'sendBack' =>
+                    ["message" => "ok"
+                    ],
                 'token' => true
             ], [
                 'name' => 'Delete profile',
                 'route' => '/api/profile',
                 'methode' => 'DELETE',
-                'body' => [  ],
-                'sendBack' => [
-                    ["message"=>"ok"]
-                ],
+                'body' => [],
+                'sendBack' =>
+                    ["message" => "ok"],
                 'token' => true
             ], [
                 'name' => 'Upload profile image',
                 'route' => '/api/profile/upload/image',
                 'methode' => 'POST',
-                'body' => [ "formdata"=>"form data with key 'image'"],
+                'body' => ["formdata" => "form data with key 'image'"],
                 'sendBack' => [
-                    ["url"=>"string"]
+                    "url" => "string"
                 ],
                 'token' => true
             ], [
@@ -107,7 +106,36 @@ class HomeController extends AbstractController
                 'methode' => 'GET',
                 'body' => [],
                 'sendBack' => [
-                    ["url"=>"string"]
+                    [
+                        "id" => "int (AI) (NOT NULL)",
+                        "name" => "string",
+                        "description" => "string",
+                        "isPublic" => "boolean",
+                        "startDate" => "string (d.m.Y h:i)",
+                        "endDate" => "string (d.m.Y h:i)",
+                        "isPublicPlace" => "boolean",
+                        "state" => "onSchedule/canceled",
+                        "createdAt" => "string (d.m.Y h:i)"
+                    ], ['...']
+                ],
+                'token' => true
+            ], [
+                'name' => 'Get our contributions',
+                'route' => '/api/profile/contributions',
+                'methode' => 'GET',
+                'body' => [],
+                'sendBack' => [
+                    [
+                        "id" => "int (AI) (NOT NULL)",
+                        "name" => "string",
+                        "description" => "string",
+                        "isPublic" => "boolean",
+                        "startDate" => "string (d.m.Y h:i)",
+                        "endDate" => "string (d.m.Y h:i)",
+                        "isPublicPlace" => "boolean",
+                        "state" => "onSchedule/canceled",
+                        "createdAt" => "string (d.m.Y h:i)"
+                    ], ['...']
                 ],
                 'token' => true
             ]
