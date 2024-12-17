@@ -22,7 +22,7 @@ class ContributionController extends AbstractController
         if (!ValidatorService::isValidEvent($event)) {
             return $this->json(["message" => "Event is passed or canceled"], 400);
         }
-        if ($this->getUser()->getProfile()->isEventInEventsOfUser($event)){
+        if (!$this->getUser()->getProfile()->isEventInEventsOfUser($event)){
             return $this->json(["message" => "You are not participant of the event"], 400);
         }
 

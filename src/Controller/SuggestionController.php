@@ -81,7 +81,7 @@ class SuggestionController extends AbstractController
     #[Route('/suggestion/{id}', name: 'misshandle_suggestion', methods: 'DELETE')]
     public function misshandleSuggestion(Suggestion $suggestion, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer): Response
     {
-        if ($this->getUser()->getProfile()->isEventInEventsOfUser($suggestion->getEvent())){
+        if (!$this->getUser()->getProfile()->isEventInEventsOfUser($suggestion->getEvent())){
             return $this->json(["message" => "You are not participant of the event"], 400);
         }
         if (!ValidatorService::isValidEvent($suggestion->getEvent())) {
