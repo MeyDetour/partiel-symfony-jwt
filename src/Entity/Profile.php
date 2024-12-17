@@ -280,13 +280,13 @@ class Profile
      */
     public function getEvents(): Collection
     {
-        return $this->events;
+        return $this->organizedEvents;
     }
 
     public function addEvent(Event $event): static
     {
-        if (!$this->events->contains($event)) {
-            $this->events->add($event);
+        if (!$this->organizedEvents->contains($event)) {
+            $this->organizedEvents->add($event);
             $event->setOrganisator($this);
         }
 
@@ -295,7 +295,7 @@ class Profile
 
     public function removeEvent(Event $event): static
     {
-        if ($this->events->removeElement($event)) {
+        if ($this->organizedEvents->removeElement($event)) {
             // set the owning side to null (unless already changed)
             if ($event->getOrganisator() === $this) {
                 $event->setOrganisator(null);
