@@ -30,11 +30,6 @@ class Profile
     #[Groups(['profile'])]
     private ?User $userAssociated = null;
 
-    /**
-     * @var Collection<int, Event>
-     */
-    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organisator', orphanRemoval: true)]
-    private Collection $events;
 
     /**
      * @var Collection<int, Event>
@@ -69,10 +64,17 @@ class Profile
     #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'administrators')]
     private Collection $administratorInEvents;
 
+    /**
+     * @var Collection<int, Event>
+     */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organisator', orphanRemoval: true)]
+    private Collection $events;
+
+
 
     public function __construct()
     {
-        $this->events = new ArrayCollection();
+     /*   $this->events = new ArrayCollection();*/
         $this->eventsWichProfileParticip = new ArrayCollection();
         $this->invitations = new ArrayCollection();
         $this->contributions = new ArrayCollection();
@@ -108,35 +110,6 @@ class Profile
         return $this;
     }
 
-    /**
-     * @return Collection<int, Event>
-     */
-    public function getEvents(): Collection
-    {
-        return $this->events;
-    }
-
-    public function addEvent(Event $event): static
-    {
-        if (!$this->events->contains($event)) {
-            $this->events->add($event);
-            $event->setOrganisator($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEvent(Event $event): static
-    {
-        if ($this->events->removeElement($event)) {
-            // set the owning side to null (unless already changed)
-            if ($event->getOrganisator() === $this) {
-                $event->setOrganisator(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Event>
@@ -296,6 +269,37 @@ class Profile
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setOrganisator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getOrganisator() === $this) {
+                $event->setOrganisator(null);
+            }
+        }
+
+        return $this;
+    }
+
 
 
 

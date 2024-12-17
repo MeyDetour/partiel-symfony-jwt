@@ -38,11 +38,6 @@ class Event
     #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?\DateTimeInterface $endDate = null;
 
-    #[ORM\ManyToOne(inversedBy: 'events')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent','contributionsProfile'])]
-    //author
-    private ?Profile $organisator = null;
 
     #[ORM\Column]
     #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
@@ -92,6 +87,11 @@ class Event
     #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'administratorInEvents')]
     #[Groups(['getDetailOfPrivateEvent'])]
     private Collection $administrators;
+
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Profile $organisator = null;
+
 
 
 
@@ -170,17 +170,7 @@ class Event
         return $this;
     }
 
-    public function getOrganisator(): ?Profile
-    {
-        return $this->organisator;
-    }
 
-    public function setOrganisator(?Profile $organisator): static
-    {
-        $this->organisator = $organisator;
-
-        return $this;
-    }
 
     public function isPublicPlace(): ?bool
     {
@@ -370,6 +360,18 @@ class Event
     public function removeAdministrator(Profile $administrator): static
     {
         $this->administrators->removeElement($administrator);
+
+        return $this;
+    }
+
+    public function getOrganisator(): ?Profile
+    {
+        return $this->organisator;
+    }
+
+    public function setOrganisator(?Profile $organisator): static
+    {
+        $this->organisator = $organisator;
 
         return $this;
     }
