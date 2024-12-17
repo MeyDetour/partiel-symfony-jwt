@@ -15,45 +15,45 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations","contributionsProfile"])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations","contributionsProfile"])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations","contributionsProfile"])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations","contributionsProfile"])]
     private ?bool $isPublic = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent'])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent','contributionsProfile'])]
     //author
     private ?Profile $organisator = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?bool $isPublicPlace = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?string $state = null;
 
     #[ORM\Column]
-    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations"])]
+    #[Groups(['getEvents','getDetailOfPrivateEvent',"invitations",'contributionsProfile'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
@@ -73,16 +73,36 @@ class Event
     private Collection $invitations;
 
     /**
+     * @var Collection<int, Suggestion>
+     */
+    #[ORM\OneToMany(targetEntity: Suggestion::class, mappedBy: 'event', orphanRemoval: true)]
+    #[Groups(['getDetailOfPrivateEvent'])]
+    private Collection $suggestions;
+
+    /**
      * @var Collection<int, Contribution>
      */
     #[ORM\OneToMany(targetEntity: Contribution::class, mappedBy: 'event')]
+    #[Groups(['getDetailOfPrivateEvent'])]
     private Collection $contributions;
+
+    /**
+     * @var Collection<int, Profile>
+     */
+    #[ORM\ManyToMany(targetEntity: Profile::class, inversedBy: 'administratorInEvents')]
+    #[Groups(['getDetailOfPrivateEvent'])]
+    private Collection $administrators;
+
+
+
 
     public function __construct()
     {
         $this->participants = new ArrayCollection();
         $this->invitations = new ArrayCollection();
+        $this->suggestions = new ArrayCollection();
         $this->contributions = new ArrayCollection();
+        $this->administrators = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -205,7 +225,16 @@ class Event
     {
         return $this->participants;
     }
+    public function isProfileInParticipants(Profile $profile): bool
+    {
+        foreach ($this->participants as $participant){
 
+            if ($participant ==  $profile) {
+                return true;
+            }
+        }
+        return false;
+    }
     public function addParticipant(Profile $participant): static
     {
         if (!$this->participants->contains($participant)) {
@@ -253,6 +282,36 @@ class Event
     }
 
     /**
+     * @return Collection<int, Suggestion>
+     */
+    public function getSuggestions(): Collection
+    {
+        return $this->suggestions;
+    }
+
+    public function addSuggestion(Suggestion $suggestion): static
+    {
+        if (!$this->suggestions->contains($suggestion)) {
+            $this->suggestions->add($suggestion);
+            $suggestion->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuggestion(Suggestion $suggestion): static
+    {
+        if ($this->suggestions->removeElement($suggestion)) {
+            // set the owning side to null (unless already changed)
+            if ($suggestion->getEvent() === $this) {
+                $suggestion->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return Collection<int, Contribution>
      */
     public function getContributions(): Collection
@@ -281,4 +340,39 @@ class Event
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Profile>
+     */
+    public function getAdministrators(): Collection
+    {
+        return $this->administrators;
+    }
+
+    public function addAdministrator(Profile $administrator): static
+    {
+        if (!$this->administrators->contains($administrator)) {
+            $this->administrators->add($administrator);
+        }
+
+        return $this;
+    }
+    public function isProfileInAdministrators(Profile $profile): bool
+    {
+        foreach ($this->administrators as $admin){
+
+            if ($admin ==  $profile) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public function removeAdministrator(Profile $administrator): static
+    {
+        $this->administrators->removeElement($administrator);
+
+        return $this;
+    }
+
+
 }

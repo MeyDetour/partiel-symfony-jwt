@@ -29,6 +29,25 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function searchInUser(string $keyword): array
+    {
+        $qb = $this->createQueryBuilder('e');
+
+        return $qb->where(
+            $qb->expr()->orX(
+                $qb->expr()->like('e.name', ':keyword'),
+                $qb->expr()->like('e.description', ':keyword')
+            )
+        )
+            ->setParameter('keyword', '%' . $keyword . '%')
+            ->getQuery()
+            ->getResult();
+    }
+
+
+
+
     //  /**
 //     * @return Event[] Returns an array of Event objects
 //     */

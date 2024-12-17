@@ -2,46 +2,84 @@
 
 namespace App\Entity;
 
-use App\Repository\ContributionsRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Repository\ContributionRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity(repositoryClass: ContributionsRepository::class)]
+#[ORM\Entity(repositoryClass: ContributionRepository::class)]
 class Contribution
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getDetailOfPrivateEvent','contributionsProfile'])]
     private ?int $id = null;
 
+    #[ORM\Column(type: Types::TEXT,nullable: true)]
+    #[Groups(['getDetailOfPrivateEvent','contributionsProfile'])]
+    private ?string $description = null;
+
+    #[ORM\OneToOne(inversedBy: 'contribution', cascade: ['persist', 'remove'])]
+    #[Groups(['contributionsProfile',"contributionsProfile"])]
+    private ?Suggestion $suggestion = null;
+
     #[ORM\ManyToOne(inversedBy: 'contributions')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getDetailOfPrivateEvent'])]
+    private ?Profile $author = null;
+
+    #[ORM\ManyToOne(inversedBy: 'contributions')]
+    #[Groups(["contributionsProfile"])]
     private ?Event $event = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
-    /**
-     * @var Collection<int, OtherTakingInCharge>
-     */
-    #[ORM\OneToMany(targetEntity: OtherTakingInCharge::class, mappedBy: 'contirbution', orphanRemoval: true)]
-    private Collection $otherTakingInCharges;
-
-    /**
-     * @var Collection<int, Suggestion>
-     */
-    #[ORM\OneToMany(targetEntity: Suggestion::class, mappedBy: 'contribution', orphanRemoval: true)]
-    private Collection $suggestions;
-
-    public function __construct()
-    {
-        $this->otherTakingInCharges = new ArrayCollection();
-        $this->suggestions = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getSuggestion(): ?Suggestion
+    {
+        return $this->suggestion;
+    }
+    #[Groups(['getDetailOfPrivateEvent'])]
+    public function getSuggestionId(): int|null
+    {
+        if (!$this->suggestion){
+            return null;
+        }
+        return $this->suggestion->getId();
+    }
+
+    public function setSuggestion(?Suggestion $suggestion): static
+    {
+        $this->suggestion = $suggestion;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?Profile
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?Profile $author): static
+    {
+        $this->author = $author;
+
+        return $this;
     }
 
     public function getEvent(): ?Event
@@ -52,78 +90,6 @@ class Contribution
     public function setEvent(?Event $event): static
     {
         $this->event = $event;
-
-        return $this;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, OtherTakingInCharge>
-     */
-    public function getOtherTakingInCharges(): Collection
-    {
-        return $this->otherTakingInCharges;
-    }
-
-    public function addOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
-    {
-        if (!$this->otherTakingInCharges->contains($otherTakingInCharge)) {
-            $this->otherTakingInCharges->add($otherTakingInCharge);
-            $otherTakingInCharge->setContirbution($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
-    {
-        if ($this->otherTakingInCharges->removeElement($otherTakingInCharge)) {
-            // set the owning side to null (unless already changed)
-            if ($otherTakingInCharge->getContirbution() === $this) {
-                $otherTakingInCharge->setContirbution(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Suggestion>
-     */
-    public function getSuggestions(): Collection
-    {
-        return $this->suggestions;
-    }
-
-    public function addSuggestion(Suggestion $suggestion): static
-    {
-        if (!$this->suggestions->contains($suggestion)) {
-            $this->suggestions->add($suggestion);
-            $suggestion->setContribution($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSuggestion(Suggestion $suggestion): static
-    {
-        if ($this->suggestions->removeElement($suggestion)) {
-            // set the owning side to null (unless already changed)
-            if ($suggestion->getContribution() === $this) {
-                $suggestion->setContribution(null);
-            }
-        }
 
         return $this;
     }

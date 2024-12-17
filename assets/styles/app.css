@@ -1,3 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+
 body {
-    background-color: skyblue;
+    margin: 0;
+    padding: 34px;
+    box-sizing: border-box;
+
+    background-position: center;
+    background-size: cover;
+    width: 100vw;
+    min-height: 100vh;
+
+    overflow-x: hidden;
+
+
+    font-family: "Nunito", serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.backgroundImage {
+    background-image: url("../bckground.png");
+
+    box-sizing: border-box;
+
+    background-position: center;
+    background-size: cover;
+    width: 100vw;
+    height: 100vh;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    z-index: -1;
+
+
+}
+
+.blackHeader {
+    width: 100%;
+    height: 58vh;
+
+
+    color: white;
+    background-image: url("../blackBackground.png");
+
+    background-size: cover;
+    border-radius: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.blackHeader > div {
+    display: flex;
+    flex-direction: row;
+    gap: 35px;
+}
+
+.blackHeader button {
+
+    background: #ffffff4f;
+    border: 0;
+    color: white;
+    font-size: 20px;
+    border-radius: 9px;
+    padding: 5px 21px;
+    cursor: pointer;
+
+}.blackHeader button:hover {
+
+     background: rgba(241, 241, 241, 0.31);
+
+ }
+
+h1 {
+    font-size: 50px;
+}
+
+h2 {
+
+    font-size: 40px;
+    color: white;
+}
+
+/*=========== Types ===============*/
+
+.greenType {
+    background: #00800030;
+    border: 1px solid green;
+    color: green;
+}
+
+.redType {
+    background: #ff000030;
+    border: 1px solid red;
+    color: red;
+}
+
+.blueType {
+    background: rgba(0, 0, 255, 0.19);
+    border: 1px solid blue;
+    color: blue;
+}
+
+.grayType {
+    background: rgba(128, 128, 128, 0.19);
+    border: 1px solid grey;
+    color: grey;
+}
+
+/*===============COLOR CLASS=============*/
+.intColor, .booleanColor, .datetimeColor ,.stringColor, .urlColor, .labelColor {
+    font-weight: 800;
+}
+
+.intColor {
+    color: #8181ff;
+}
+
+.booleanColor {
+    color: #ff8181;
+}
+
+.stringColor {
+    color: #399d00;
+}
+
+.urlColor {
+    color: #a2ff6b;
+}.notnullColor {
+     color: #8b8b8b;
+ }
+.labelColor {
+    color: #95d7f9;
+}
+.datetimeColor{
+    color: orangered;
+}
+
+/*=========== ===============*/
+
+[class^="section1"] {
+
+    padding-block: 60px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+
+    width: 75%;
+
+    gap: 29px;
+
+}
+
+
+.routeSection1 {
+    background: #ffffffa6;
+    min-height: 128px;
+    width: 21%;
+    border: 1px solid #dfdfdf;
+    padding: 14px 18px;
+    box-sizing: border-box;
+    border-radius: 9px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+
+    gap: 13px;
+
+    font-size: 14px;
+
+    box-shadow: 0px 6px 23px 0px #8080802e;
+}
+
+.routeSection1 .name {
+    font-weight: 780;
+}
+
+.routeSection1 > div .path {
+    color: #121212;
+}
+
+.routeSection1 .type {
+    padding: 5px 12px;
+    border-radius: 7px;
+
+}
+
+[class^="section2"]{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+
+    width: 100%;
+
+}
+[class^="section2"] pre{
+    position: relative;
+    border: 1px solid #dfdfdf;
+    background: #f1f1f1;
+    border-radius: 10px;
+    padding: 40px 24px;
+}
+[class^="section2"] pre .json{
+
+    position: absolute;
+    top: 8%;
+    right: 2%;
+    color: grey;
+}
+
+[class^="routeSection2"]{
+    display: flex;
+    flex-direction: column;
+    width: 43%;
+
+    margin-bottom:80px;
+}
+
+
+
+[class^="routeSection2"] > .header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+[class^="routeSection2"]  .type{
+    width: fit-content;
+
+    padding: 5px 12px;
+    border-radius: 7px;
 }

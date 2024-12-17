@@ -20,7 +20,7 @@ REQUEETE
 -
 
 REGLE
-- [x] si event annulé on peu tpas le rejoindre
+- [x] si event annulé on peu tpas le rejoindre  
 - [x] ajouter des personnes a un event privé  ayant un compte si event non annulé
 - [x] on peut accepter ou  refuser uen invitation que jus'qua la date de debut , si event passé on  met comme refuser
 - [x] on peut pas changer le status d'une invitation passé
@@ -28,17 +28,15 @@ REGLE
 
 
 Evenemnt dans un lieu privé :
-- creer des contributions 
--  ajouter a ces contributions des suggetsions 
--  ajouter a ces contributions des prise en charge ( rebelle ))
--  prendre en charge une suggestion , dé prendre en charge une suggestion 
--  supprimer une prise en charge rebelle 
-- supprimer une suggestion 
-- editer une suggestion
-  supprimer tout court une pris ene charge
-- Contribution ( event, suggestions,prises en charge,desstiption (type) ))
-- Prise en charge ( profile,  description , contribution )
-- Suggestion (  description , status = [prise en charge, a prendre en charge ], profile qui s'en occupe ,contribution )
+- [x] voir les suggestions ,
+- [x] voir les contributions
+- [x] voir ses contirbutions
+-  [x] ajouter des suggetsions , modifier et suppriemr 
+-  [x] ajouter des contributions (rebelle) 
+-  [x] prendre en charge une suggestion , dé prendre en charge une suggestion 
+   
+- Contribution ( event, suggestions,profile ,desstiption (type) )) 
+- Suggestion (  description , status = [prise en charge, a prendre en charge ] ,contribution )
  
 
 

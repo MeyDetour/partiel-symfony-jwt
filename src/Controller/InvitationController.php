@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Invitation;
 use App\Repository\EventRepository;
 use App\Repository\UserRepository;
+use App\Service\ValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,7 +40,7 @@ class InvitationController extends AbstractController
         if (!$event) {
             return $this->json(["message" => "Event found"], 404);
         }
-        if (!EventController::isValidEvent($event)) {
+        if (!ValidatorService::isValidEvent($event)) {
             return $this->json(["message" => "Event is canceled or passed"], 404);
         }
 
@@ -47,10 +48,9 @@ class InvitationController extends AbstractController
             return $this->json(["message" => "Event is public"], 404);
         }
 
-        //user cannot invite itself
-        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
-            # ad administrator permission
-            return $this->json(["message" => "Only author can edit this event"], 401);
+        // profile must be organisator or administrator
+        if ($this->getUser()->getProfile() != $event->getOrganisator() and !$event->isProfileInAdministrators($this->getUser()->getProfile() )) {
+            return $this->json(["message" => "Only author and administrators can do this action"], 401);
         }
 
 

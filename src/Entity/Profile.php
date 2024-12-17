@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProfileRepository;
+use App\Service\ImageService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,18 +51,33 @@ class Profile
     private Collection $invitations;
 
     /**
-     * @var Collection<int, OtherTakingInCharge>
+     * @var Collection<int, Contribution>
      */
-    #[ORM\OneToMany(targetEntity: OtherTakingInCharge::class, mappedBy: 'author', orphanRemoval: true)]
-    private Collection $otherTakingInCharges;
+    #[ORM\OneToMany(targetEntity: Contribution::class, mappedBy: 'author', orphanRemoval: true)]
+    private Collection $contributions;
+
+    #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
+    private ?Image $image = null;
+
+
+    #[Groups(['users','profile','getDetailOfPrivateEvent'])]
+    private ?string $imageUrl = null;
+
+    /**
+     * @var Collection<int, Event>
+     */
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'administrators')]
+    private Collection $administratorInEvents;
+
 
     public function __construct()
     {
         $this->events = new ArrayCollection();
         $this->eventsWichProfileParticip = new ArrayCollection();
         $this->invitations = new ArrayCollection();
-        $this->otherTakingInCharges = new ArrayCollection();
-    }
+        $this->contributions = new ArrayCollection();
+        $this->administratorInEvents = new ArrayCollection();
+          }
 
     public function getId(): ?int
     {
@@ -200,32 +216,87 @@ class Profile
     }
 
     /**
-     * @return Collection<int, OtherTakingInCharge>
+     * @return Collection<int, Contribution>
      */
-    public function getOtherTakingInCharges(): Collection
+    public function getContributions(): Collection
     {
-        return $this->otherTakingInCharges;
+        return $this->contributions;
     }
 
-    public function addOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
+    public function addContribution(Contribution $contribution): static
     {
-        if (!$this->otherTakingInCharges->contains($otherTakingInCharge)) {
-            $this->otherTakingInCharges->add($otherTakingInCharge);
-            $otherTakingInCharge->setAuthor($this);
+        if (!$this->contributions->contains($contribution)) {
+            $this->contributions->add($contribution);
+            $contribution->setAuthor($this);
         }
 
         return $this;
     }
 
-    public function removeOtherTakingInCharge(OtherTakingInCharge $otherTakingInCharge): static
+    public function removeContribution(Contribution $contribution): static
     {
-        if ($this->otherTakingInCharges->removeElement($otherTakingInCharge)) {
+        if ($this->contributions->removeElement($contribution)) {
             // set the owning side to null (unless already changed)
-            if ($otherTakingInCharge->getAuthor() === $this) {
-                $otherTakingInCharge->setAuthor(null);
+            if ($contribution->getAuthor() === $this) {
+                $contribution->setAuthor(null);
             }
         }
 
         return $this;
     }
+
+    public function getImage(): ?Image
+    {
+        return $this->image;
+    }
+
+
+    public function setImage(?Image $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+    public function getImageUrl(): string
+    {
+        return $this->imageUrl;
+    }
+
+
+    public function setImageUrl(string $url): static
+    {
+        $this->imageUrl = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getAdministratorInEvents(): Collection
+    {
+        return $this->administratorInEvents;
+    }
+
+    public function addAdministratorInEvent(Event $administratorInEvent): static
+    {
+        if (!$this->administratorInEvents->contains($administratorInEvent)) {
+            $this->administratorInEvents->add($administratorInEvent);
+            $administratorInEvent->addAdministrator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdministratorInEvent(Event $administratorInEvent): static
+    {
+        if ($this->administratorInEvents->removeElement($administratorInEvent)) {
+            $administratorInEvent->removeAdministrator($this);
+        }
+
+        return $this;
+    }
+
+
+
 }

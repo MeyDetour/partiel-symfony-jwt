@@ -5,7 +5,11 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Entity\Profile;
 use App\Entity\User;
+use App\Repository\ContributionRepository;
 use App\Repository\EventRepository;
+use App\Repository\ProfileRepository;
+use App\Repository\UserRepository;
+use App\Service\ValidatorService;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,11 +25,11 @@ class EventController extends AbstractController
     #[Route('/event/{id}', name: 'canceled_event', methods: "patch")]
     public function canceledEvent(EntityManagerInterface $entityManager, Event $event): Response
     {
-        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
-            # ad administrator permission
-            return $this->json(["message" => "Only author can edit this event"], 401);
+        // profile must be organisator or administrator
+        if ($this->getUser()->getProfile() != $event->getOrganisator() and !$event->isProfileInAdministrators($this->getUser()->getProfile())) {
+            return $this->json(["message" => "Only author and administrators can do this action"], 401);
         }
-        if (!self::isValidEvent($event)) {
+        if (!ValidatorService::isValidEvent($event)) {
             return $this->json(["message" => "Event is passed or canceled"], 401);
         }
         $event->setState("canceled");
@@ -71,10 +75,11 @@ class EventController extends AbstractController
     #[Route('/edit/event/{id}', name: 'edit_event', methods: "put")]
     public function edit(SerializerInterface $serializer, Event $event, EntityManagerInterface $entityManager, Request $request): Response
     {
-        if ($this->getUser()->getProfile() != $event->getOrganisator()) {
-            # ad administrator permission
-            return $this->json(["message" => "Only author can edit this event"], 401);
+        // profile must be organisator or administrator
+        if ($this->getUser()->getProfile() != $event->getOrganisator() and !$event->isProfileInAdministrators($this->getUser()->getProfile())) {
+            return $this->json(["message" => "Only author and administrators can do this action"], 401);
         }
+
         if ($event->getEndDate() <= $event->getStartDate() or $event->getStartDate() <= new \DateTime() or $event->getEndDate() <= new \DateTime()) {
             return $this->json(["message" => "You cannot edit an old event"], 401);
         }
@@ -112,7 +117,7 @@ class EventController extends AbstractController
         if (!$event->isPublic()) {
             return $this->json(["message" => "Event must be public"], 400);
         }
-        if (!self::isValidEvent($event)) {
+        if (!ValidatorService::isValidEvent($event)) {
             return $this->json(["message" => "This event is passed or canceled"], 401);
         }
 
@@ -122,26 +127,87 @@ class EventController extends AbstractController
         return $this->json(["message" => "ok"], 200);
 
     }
- #[Route('/left/event/{id}', name: 'remove_public_event', methods: "PATCH")]
-    public function leftPublicEvent(Event $event, EntityManagerInterface $manager): Response
+
+    #[Route('/left/event/{id}', name: 'remove_public_event', methods: "PATCH")]
+    public function leftPublicEvent(Event $event, EntityManagerInterface $manager, ContributionRepository $contributionRepository): Response
     {
-        if($event->getOrganisator()==$this->getUser()->getProfile()){
+        if ($event->getOrganisator() == $this->getUser()->getProfile()) {
             return $this->json(["message" => "Organisator cannot left its own event its illogic"], 400);
         }
 
         if (!$event->isPublic()) {
             return $this->json(["message" => "Event must be public"], 400);
         }
-        if (!self::isValidEvent($event)) {
+        if (!ValidatorService::isValidEvent($event)) {
             return $this->json(["message" => "This event is passed or canceled"], 401);
         }
 
         $event->removeParticipant($this->getUser()->getProfile());
+        $contributions = $contributionRepository->findBy(['event' => $event, "author" => $this->getUser()->getProfile()]);
+        foreach ($contributions as $contribution) {
+            $manager->remove($contribution);
+        }
+
+
         $manager->persist($event);
         $manager->flush();
         return $this->json(["message" => "ok"], 200);
 
     }
+
+    #[Route('/event/{id}/add/profile/{profileId}/as/administrator', name: 'add_administrator', methods: "PATCH")]
+    public function addAdministrator(Event $event, int $profileId, EntityManagerInterface $manager, ProfileRepository $profileRepository): Response
+    {
+        //only organisator can add administrator not admin
+        if ($event->getOrganisator() != $this->getUser()->getProfile()) {
+            return $this->json(["message" => "You must be organisator to add administrator"], 400);
+        }
+        if (!ValidatorService::isValidEvent($event)) {
+            return $this->json(["message" => "This event is passed or canceled"], 401);
+        }
+        $profile = $profileRepository->find($profileId);
+        if (!$profile) {
+            return $this->json(["message" => "Profile not found"], 404);
+        }
+        if (!$event->isProfileInParticipants($profile)) {
+            return $this->json(["message" => "User must be in participants"], 400);
+        }
+
+        $event->addAdministrator($profile);
+
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
+
+    #[Route('/event/{id}/remove/profile/{profileId}/from/administrators', name: 'remove_administrator', methods: "DELETE")]
+    public function removeAdministrator(Event $event, int $profileId, EntityManagerInterface $manager, ProfileRepository $profileRepository): Response
+    {
+        // only organisator can remove admin not admin
+        if ($event->getOrganisator() != $this->getUser()->getProfile()) {
+            return $this->json(["message" => "You must be organisator to add administrator"], 400);
+        }
+        if (!ValidatorService::isValidEvent($event)) {
+            return $this->json(["message" => "This event is passed or canceled"], 401);
+        }
+        $profileId = $profileRepository->find($profileId);
+        if (!$profileId) {
+            return $this->json(["message" => "Profile not found"], 404);
+        }
+        if (!$event->isProfileInParticipants($profileId)) {
+            return $this->json(["message" => "User must be in participants"], 400);
+        }
+
+        $event->removeAdministrator($profileId);
+
+        $manager->persist($event);
+        $manager->flush();
+        return $this->json(["message" => "ok"], 200);
+
+    }
+
+
 
     //==============================================================GETTERS
 
@@ -154,21 +220,21 @@ class EventController extends AbstractController
 
         foreach ($this->getUser()->getProfile()->getInvitations() as $invitation) {
             $event = $invitation->getEvent();
-            if (self::isValidEvent($event)) {
+            if (ValidatorService::isValidEvent($event)) {
                 $events[] = $event;
             }
         }
 
         //you are participant of event
         foreach ($this->getUser()->getProfile()->getEventsWichProfileParticip() as $event) {
-            if (self::isValidEvent($event) && !$event->isPublic()) {
+            if (ValidatorService::isValidEvent($event) && !$event->isPublic()) {
                 $events[] = $event;
             }
         }
 
         //you are creator of event
         foreach ($this->getUser()->getProfile()->getEvents() as $event) {
-            if (self::isValidEvent($event) && !$event->isPublic()) {
+            if (ValidatorService::isValidEvent($event) && !$event->isPublic()) {
                 $events[] = $event;
             }
         }
@@ -192,21 +258,21 @@ class EventController extends AbstractController
         $events = [];
         foreach ($this->getUser()->getProfile()->getInvitations() as $invitation) {
             $event = $invitation->getEvent();
-            if (self::isValidEvent($event)) {
+            if (ValidatorService::isValidEvent($event)) {
                 $events[] = $event;
             }
         }
 
         //you are participant of event
         foreach ($this->getUser()->getProfile()->getEventsWichProfileParticip() as $event) {
-            if (self::isValidEvent($event) && !$event->isPublic()) {
+            if (ValidatorService::isValidEvent($event) && !$event->isPublic()) {
                 $events[] = $event;
             }
         }
 
         //you are creator of event
         foreach ($this->getUser()->getProfile()->getEvents() as $event) {
-            if (self::isValidEvent($event) && !$event->isPublic()) {
+            if (ValidatorService::isValidEvent($event) && !$event->isPublic()) {
                 $events[] = $event;
             }
         }
@@ -232,54 +298,26 @@ class EventController extends AbstractController
     {
 
 
-
-
         //  you can see only active events
         //comment this line to see all event includes passsed events ( this keep restriction for private event)
         // if event is passed organisator can ( quand meme) see it's event
-        if (!self::isValidEvent($event) && $event->getOrganisator() != $this->getUser()->getProfile()) {
+        if (!ValidatorService::isValidEvent($event) && $event->getOrganisator() != $this->getUser()->getProfile()) {
             return $this->json(["Event is finished or canceled"], 401);
         }
 
 
-
         //if its private event we check if your invited or you are participant or organisator
         // allow to see participants and invitations status only if event is private
-        if (!self::isAuthorizedToSeePrivateEvent($this->getUser(), $event)) {
+        if (!ValidatorService::isAuthorizedToSeePrivateEvent($this->getUser(), $event)) {
             return $this->json(["Event is private and you are not invited"], 401);
         }
 
-//invitationss doesnt exist in the context of public event, we return [] for public event
+        //invitationss doesnt exist in the context of public event, we return [] for public event
         return $this->json($event, 200, [], ['groups' => ['getDetailOfPrivateEvent']]);
     }
 
 
     //==============================================================VERIFICATOR
-
-    static function isValidEvent(Event $event): bool
-    {
-        $now = new \DateTime();
-        if ($event->getStartDate() > $now and $event->getState() == "onSchedule") {
-            return true;
-        }
-        return false;
-    }
-
-    static function isAuthorizedToSeePrivateEvent($user, Event $event): bool
-    {
-
-        $profile = $user->getProfile();
-        if ($profile == $event->getOrganisator()) {
-            return true;
-        }
-        if (!$event->isPublic() and !$profile->isEventInEventsOfUser($event) and !$profile->isEventInInvited($event)) {
-
-            return false;
-
-        }
-
-        return true;
-    }
 
 
     //TO DO
@@ -287,7 +325,23 @@ class EventController extends AbstractController
     #[Route('/search/event/{searchTerm}', name: 'search_event')]
     public function searchEvent(SerializerInterface $serializer, $searchTerm, EventRepository $eventRepository, Request $request): Response
     {
-        return $this->json(["message" => "ok"], 200, [], ['groups' => ['getEvents']]);
+        if (trim($searchTerm, ' ') == "") {
+            return $this->json(["message" => "SearchTerm must not be empty"], 401);
+
+        }
+
+        $events = [];
+        $eventsData = $eventRepository->searchInUser($searchTerm);
+        foreach ($eventsData as $event) {
+            if ($event->isPublic()) {
+                $events[] = $event;
+            }
+            if (ValidatorService::isValidEvent($event) and ValidatorService::isAuthorizedToSeePrivateEvent($this->getUser(),$event)) {
+                $events[] = $event;
+            }
+
+        }
+        return $this->json($events, 200, [], ['groups' => ['getEvents']]);
     }
 
 }

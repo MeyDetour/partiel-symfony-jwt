@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\Suggestion;
+use App\Entity\Contribution;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Suggestion>
+ * @extends ServiceEntityRepository<Contribution>
  */
-class SuggestionRepository extends ServiceEntityRepository
+class ContributionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Suggestion::class);
+        parent::__construct($registry, Contribution::class);
     }
 
     //    /**
-    //     * @return Suggestion[] Returns an array of Suggestion objects
+    //     * @return Contribution[] Returns an array of Contribution objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
+    //            ->orderBy('c.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Suggestion
+    //    public function findOneBySomeField($value): ?Contribution
     //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()

@@ -12,8 +12,24 @@ class HomeController extends AbstractController
     #[Route('/home', name: 'app_home')]
     public function index(): Response
     {
+        $userRoute = [
+
+        ];
+        $eventRoute = [];
+        $invitationRoute = [];
+        $suggestionRoute = [];
+
+
+
+        $themes = [
+            "User" => $userRoute,
+            "Event" => $eventRoute,
+            "Invitation" => $invitationRoute,
+            "suggestion" => $suggestionRoute
+        ];
+
         return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
+            'themes' => $themes,
         ]);
     }
 }
