@@ -141,9 +141,5 @@ class InvitationController extends AbstractController
         return $this->json(["message" => "ok"], 200);
 
     }
-    # edit delete invit
-
-    # if invit already confirm cant accept
-    # refuse invit
 
 }

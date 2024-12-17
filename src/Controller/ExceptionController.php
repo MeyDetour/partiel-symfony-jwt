@@ -10,10 +10,18 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ExceptionController extends AbstractController
 {
-    public function notFound(NotFoundHttpException $exception): Response
+    public function handleException(\Exception $exception): Response
     {
+
+        if ($exception instanceof NotFoundHttpException){
+            return $this->json(
+                ['message' => "Entity not found",], 400
+            );
+        }
+
         return $this->json(
-            ['message' => "Entity not found",], 400
+            ['message' => $exception,], 400
         );
+
     }
 }

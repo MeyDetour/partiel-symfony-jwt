@@ -127,15 +127,59 @@ class HomeController extends AbstractController
                 'sendBack' => [
                     [
                         "id" => "int (AI) (NOT NULL)",
-                        "name" => "string",
-                        "description" => "string",
-                        "isPublic" => "boolean",
-                        "startDate" => "string (d.m.Y h:i)",
-                        "endDate" => "string (d.m.Y h:i)",
-                        "isPublicPlace" => "boolean",
-                        "state" => "onSchedule/canceled",
-                        "createdAt" => "string (d.m.Y h:i)"
-                    ], ['...']
+                        "description" => "null because contirbution is attached to sughgestion",
+                        "suggestion" => [
+                            "id" => "int (AI) (NOT NULL)",
+                            "description" => "string",
+                            "isTaken" => "boolean"
+                        ],
+                        "event" => [
+                            "id" => "int (AI) (NOT NULL)",
+                            "name" => "string",
+                            "isPublic" => "boolean",
+                            "startDate" => "string (d.m.Y h:i)",
+                            "endDate" => "string (d.m.Y h:i)",
+                            "description" => "the description",
+                            "isPublicPlace" => "boolean",
+                            "state" => "onSchedule/canceled",
+                            "createdAt" => "string (d.m.Y h:i)"
+                        ]
+                    ],
+                    [   "id" => "int (AI) (NOT NULL)",
+                        "description" => "string (NOT NULL)",
+                        "suggestion" => "NULL",
+                        "event" => [
+                            "id" => "int (AI) (NOT NULL)",
+                            "name" => "string",
+                            "isPublic" => "boolean",
+                            "startDate" => "string (d.m.Y h:i)",
+                            "endDate" => "string (d.m.Y h:i)",
+                            "description" => "the description",
+                            "isPublicPlace" => "boolean",
+                            "state" => "onSchedule/canceled",
+                            "createdAt" => "string (d.m.Y h:i)"
+                        ]]
+                    ,['...']
+                ],
+                [
+                    'name' => 'Get events wich we are in',
+                    'route' => '/api/profile/events',
+                    'methode' => 'GET',
+                    'body' => [],
+                    'sendBack' => [
+                        [
+                            "id" => "int (AI) (NOT NULL)",
+                            "name" => "string",
+                            "description" => "string",
+                            "isPublic" => "boolean",
+                            "startDate" => "string (d.m.Y h:i)",
+                            "endDate" => "string (d.m.Y h:i)",
+                            "isPublicPlace" => "boolean",
+                            "state" => "onSchedule/canceled",
+                            "createdAt" => "string (d.m.Y h:i)"
+                        ], ['...']
+                    ],
+                    'token' => true
                 ],
                 'token' => true
             ]

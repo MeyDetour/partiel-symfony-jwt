@@ -9,7 +9,7 @@ framework:
         # date from json to  serializer
         default_context:
             datetime_format: 'd.m.Y H:i'
-    error_controller: 'App\Controller\ExceptionController::notFound'
+    error_controller: 'App\Controller\ExceptionController::handleException'
     #esi: true
     #fragments: true
 
