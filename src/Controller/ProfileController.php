@@ -35,12 +35,16 @@ class ProfileController extends AbstractController
         if (trim($profileEdited->getdisplayName(), ' ') == "") {
             return $this->json(["message" => "You must provide valid displayName"], 400);
         }
+
+        //unique displayname
         $profileExist = $profileRepository->findOneBy(['displayName' => $profileEdited->getDisplayName()]);
         if ($profileExist) {
             return $this->json(["message" => "Display name already taken"], 400);
         }
-        $this->getUser()->getProfile()->setDisplayName($profileEdited->getDisplayName());
-        $manager->persist($this->getUser()->getProfile());
+
+        $profile = $this->getUser()->getProfile();
+        $profile->setDisplayName($profileEdited->getDisplayName());
+        $manager->persist($profile);
         $manager->flush();
 
         return $this->json($this->getUser()->getProfile(), 200, [], ['groups' => 'profile']);

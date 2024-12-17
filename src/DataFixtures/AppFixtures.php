@@ -83,6 +83,7 @@ class AppFixtures extends Fixture
             $eventCreated->setOrganisator($profile);
             $eventCreated->setStartDate(DateTime::createFromFormat('d.m.Y h:i', $event['startDate']));
             $eventCreated->setEndDate(DateTime::createFromFormat('d.m.Y h:i', $event['endDate']));
+           $eventCreated->addParticipant($profile);
             $manager->persist($eventCreated);
         }
         $manager->flush();

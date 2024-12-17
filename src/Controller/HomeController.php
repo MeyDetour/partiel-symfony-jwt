@@ -43,17 +43,73 @@ class HomeController extends AbstractController
                 'name' => 'Get all users',
                 'route' => '/api/users',
                 'methode' => 'GET',
-                'body' => [  ],
-                'sendBack' =>  [
+                'body' => [],
+                'sendBack' => [
                     "id" => "int (AI) ",
                     "email" => "string",
                     "createdAt" => "string (d.m.Y h:i)",
                     "profile" => [
-                        "id" =>"int (AI) ",
-                        "displayName" => "string"
-                    ],["..."]
+                        "id" => "int (AI) ",
+                        "displayName" => "string",
+                        "imageUrl" => "string"
+                    ], ["..."]
                 ],
-                'token' => false
+                'token' => true
+            ], [
+                'name' => 'Get own profile',
+                'route' => '/api/profile',
+                'methode' => 'GET',
+                'body' => [],
+                'sendBack' => [
+                    [
+                        "id" => "int (AI)",
+                        "displayName" => "string",
+                        "imageUrl" => "string",
+                        "userAssociated" => [
+                            "id" => "int (AI) ",
+                            "email" => "string",
+                            "createdAt" => "string (d.m.Y h:i)",
+                        ], ['...']
+                    ]
+                ],
+                'token' => true
+            ], [
+                'name' => 'Edit own profile',
+                'route' => '/api/profile',
+                'methode' => 'PUT',
+                'body' => [ "displayName" => "string (NOT NULL)",
+                ],
+                'sendBack' => [
+                    ["message"=>"ok"]
+                ],
+                'token' => true
+            ], [
+                'name' => 'Delete profile',
+                'route' => '/api/profile',
+                'methode' => 'DELETE',
+                'body' => [  ],
+                'sendBack' => [
+                    ["message"=>"ok"]
+                ],
+                'token' => true
+            ], [
+                'name' => 'Upload profile image',
+                'route' => '/api/profile/upload/image',
+                'methode' => 'POST',
+                'body' => [ "formdata"=>"form data with key 'image'"],
+                'sendBack' => [
+                    ["url"=>"string"]
+                ],
+                'token' => true
+            ], [
+                'name' => 'Get events wich we are in',
+                'route' => '/api/profile/events',
+                'methode' => 'GET',
+                'body' => [],
+                'sendBack' => [
+                    ["url"=>"string"]
+                ],
+                'token' => true
             ]
 
 
