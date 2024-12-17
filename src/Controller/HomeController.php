@@ -6,10 +6,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api')]
+#[Route('/')]
 class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home')]
+    #[Route('', name: 'app_home')]
     public function index(): Response
     {
         $userRoute = [
@@ -159,29 +159,29 @@ class HomeController extends AbstractController
                             "state" => "onSchedule/canceled",
                             "createdAt" => "string (d.m.Y h:i)"
                         ]]
-                    , ['...']
+                    , ['...']],
+                'token' => true
+            ],
+            [
+                'name' => 'Get events wich we are in',
+                'route' => '/api/profile/events',
+                'methode' => 'GET',
+                'body' => [],
+                'sendBack' => [
+                    [
+                        "id" => "int (AI) (NOT NULL)",
+                        "name" => "string",
+                        "description" => "string",
+                        "isPublic" => "boolean",
+                        "startDate" => "string (d.m.Y h:i)",
+                        "endDate" => "string (d.m.Y h:i)",
+                        "isPublicPlace" => "boolean",
+                        "state" => "onSchedule/canceled",
+                        "createdAt" => "string (d.m.Y h:i)"
+                    ], ['...']
                 ],
-                [
-                    'name' => 'Get events wich we are in',
-                    'route' => '/api/profile/events',
-                    'methode' => 'GET',
-                    'body' => [],
-                    'sendBack' => [
-                        [
-                            "id" => "int (AI) (NOT NULL)",
-                            "name" => "string",
-                            "description" => "string",
-                            "isPublic" => "boolean",
-                            "startDate" => "string (d.m.Y h:i)",
-                            "endDate" => "string (d.m.Y h:i)",
-                            "isPublicPlace" => "boolean",
-                            "state" => "onSchedule/canceled",
-                            "createdAt" => "string (d.m.Y h:i)"
-                        ], ['...']
-                    ],
-                    'token' => true
-                ],
-            ]
+                'token' => true
+            ],
 
 
         ];
@@ -398,9 +398,91 @@ class HomeController extends AbstractController
                 'sendBack' => [
                 ],
                 'token' => true
+            ], [
+                'name' => 'Accept invite',
+                'route' => '/api/invite/{id invitation}/accept',
+                'methode' => 'PATCH',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Refuse invite',
+                'route' => '/api/invite/{id invitation}/refuse',
+                'methode' => 'PATCH',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
             ],
         ];
-        $suggestionRoute = [];
+        $suggestionRoute = [
+            [
+                'name' => 'Create suggestion to event',
+                'route' => '/api/event/{id event}/create/suggestion',
+                'methode' => 'POST',
+                'body' => ["description" => "string (NOT NULL)"],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Edit suggestion to event',
+                'route' => '/api/edit/suggestion/{id suggestion}',
+                'methode' => 'PUT',
+                'body' => ["description" => "string (NOT NULL)"],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Delete suggestion to event',
+                'route' => '/api/delete/suggestion/{id suggestion}',
+                'methode' => 'DELETE',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Handle suggestion',
+                'route' => '/api/suggestion/{id suggestion}',
+                'methode' => 'PATCH',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Miss handle suggestion',
+                'route' => '/api/suggestion/{id suggestion}',
+                'methode' => 'DELETE',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Create rebelle contribution',
+                'route' => '/api/event/{event id}/suggestion/rebelle',
+                'methode' => 'post',
+                'body' => ["description" => "string (NOT NULL)"],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Edit own contribution',
+                'route' => '/api/edit/contribution/{id contribution}',
+                'methode' => 'PUT',
+                'body' => ["description" => "string (NOT NULL)"],
+                'sendBack' => [
+                ],
+                'token' => true
+            ], [
+                'name' => 'Delete own contribution',
+                'route' => '/api/delete/contribution/{id contribution}',
+                'methode' => 'DELETE',
+                'body' => [],
+                'sendBack' => [
+                ],
+                'token' => true
+            ]
+        ];
 
         /*
         [
@@ -418,15 +500,14 @@ class HomeController extends AbstractController
             ]
         */
 
-        $themes = [
-            "User" => $userRoute,
-            "Event" => $eventRoute,
-            "Invitation" => $invitationRoute,
-            "suggestion" => $suggestionRoute
-        ];
 
         return $this->render('home/index.html.twig', [
-            'themes' => $themes,
+            'themes' => [
+                "User" => $userRoute,
+                "Event" => $eventRoute,
+                "Invitation" => $invitationRoute,
+                "suggestion" => $suggestionRoute
+            ],
         ]);
     }
 }
