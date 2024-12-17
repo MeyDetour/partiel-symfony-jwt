@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Invitation;
 use App\Repository\EventRepository;
+use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
 use App\Service\ValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,24 +18,24 @@ use Symfony\Component\Serializer\SerializerInterface;
 class InvitationController extends AbstractController
 {
     #[Route('/invite', name: 'new_inivitation', methods: "post")]
-    public function new(Request $request, EventRepository $eventRepository, EntityManagerInterface $manager, UserRepository $userRepository): Response
+    public function new(Request $request, EventRepository $eventRepository, EntityManagerInterface $manager, ProfileRepository $profileRepository   ): Response
     {
         //Get data
         $data = json_decode($request->getContent(), true);
 
-        if (!$data['eventId'] and !$data['userId']) {
-            return $this->json(["message" => "You must provide eventId and userId"], 404);
+        if (!$data['eventId'] and !$data['profileId']) {
+            return $this->json(["message" => "You must provide eventId and profileId"], 404);
         }
 
         //get user and event and assert that data are correct
         $eventId = $data['eventId'];
-        $userId = $data['userId'];
+        $profileId = $data['profileId'];
         $event = $eventRepository->find($eventId);
-        $user = $userRepository->find($userId);
-        if (!$user) {
+        $profile = $profileRepository->find($profileId);
+        if (!$profile) {
             return $this->json(["message" => "User found"], 404);
         }
-        if ($user->getId() == $this->getUser()->getId()) {
+        if ($profile->getId() == $this->getUser()->getProfile()->getId()) {
             return $this->json(["message" => "You can not invite yourself"], 404);
         }
         if (!$event) {
@@ -57,7 +58,7 @@ class InvitationController extends AbstractController
         $invitation = new Invitation();
         $invitation->setCreatedAt(new \DateTimeImmutable());
         $invitation->setEvent($event);
-        $invitation->setGuest($user->getProfile());
+        $invitation->setGuest($profile);
         $invitation->setStatus("waiting");
         $manager->persist($invitation);
         $manager->flush();
