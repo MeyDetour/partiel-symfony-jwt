@@ -116,6 +116,13 @@ class Profile
     }
 
 
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEventsWichProfileParticip(): Collection
+    {
+        return $this->eventsWichProfileParticip;
+    }
 
     public function isEventInEventsOfUser(Event $eventSearched): bool
     {
